@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="si" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINI POS System</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- TailWind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4F46E5', // Indigo 600
+                        secondary: '#1E293B', // Slate 800
+                        accent: '#10B981', // Emerald 500
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-slate-800 font-sans h-screen overflow-hidden flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+        <div class="p-6 border-b border-slate-700 flex items-center gap-3">
+            <div class="bg-primary p-2 rounded-lg">
+                <i class="fa-solid fa-cash-register text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">MINI POS</h1>
+                <p class="text-xs text-slate-400">Retail & Wholesale</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <button onclick="app.navigate('dashboard')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-dashboard">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">Dashboard</span>
+            </button>
+            <button onclick="app.navigate('pos')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-pos">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">POS Terminal</span>
+            </button>
+            <button onclick="app.navigate('inventory')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-inventory">
+                <i class="fa-solid fa-boxes-stacked w-6"></i>
+                <span class="font-medium">Inventory</span>
+            </button>
+            <button onclick="app.navigate('reports')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-reports">
+                <i class="fa-solid fa-file-invoice-dollar w-6"></i>
+                <span class="font-medium">Reports</span>
+            </button>
+            <button onclick="app.navigate('vendors')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-vendors">
+                <i class="fa-solid fa-truck w-6"></i>
+                <span class="font-medium">Vendors</span>
+            </button>
+            <button onclick="app.navigate('settings')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-800 text-slate-300 hover:text-white" id="nav-settings">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">Settings</span>
+            </button>
+        </nav>
+
+
+        <div class="p-4 border-t border-slate-700">
+            <div class="text-xs text-center text-slate-500">
+                &copy; 2024 Supiri POS v1.0
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
+            <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p id="current-date" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</p>
+                    <p id="current-time" class="text-sm font-bold text-slate-800">Time</p>
+                </div>
+                <div class="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center text-slate-600 border border-gray-200">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Views Container -->
+        <div id="views-container" class="flex-1 overflow-auto bg-gray-50 p-6 relative">
+            
+            <!-- VIEW: DASHBOARD -->
+            <section id="view-dashboard" class="view-section fade-in space-y-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium">Daily Sales</p>
+                            <h3 class="text-2xl font-bold text-slate-800 mt-1" id="dash-daily-sales">Rs. 0.00</h3>
+                        </div>
+                        <div class="p-3 bg-indigo-50 text-primary rounded-xl">
+                            <i class="fa-solid fa-sack-dollar text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium">Today Orders</p>
+                            <h3 class="text-2xl font-bold text-slate-800 mt-1" id="dash-order-count">0</h3>
+                        </div>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                            <i class="fa-solid fa-receipt text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium">Low Stock Items</p>
+                            <h3 class="text-2xl font-bold text-red-600 mt-1" id="dash-low-stock">0</h3>
+                        </div>
+                        <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+                            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium">Total Products</p>
+                            <h3 class="text-2xl font-bold text-slate-800 mt-1" id="dash-total-products">0</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                            <i class="fa-solid fa-box-open text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Sales Table -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800">Recent Transactions</h3>
+                        <button onclick="app.navigate('reports')" class="text-primary text-sm font-medium hover:underline">View All</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-gray-50 text-xs uppercase font-semibold text-slate-500">
+                                <tr>
+                                    <th class="px-6 py-4">Receipt ID</th>
+                                    <th class="px-6 py-4">Time</th>
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-recent-sales-body" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                                <tr><td colspan="4" class="text-center py-4">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: POS -->
+            <section id="view-pos" class="view-section hidden h-full flex flex-col md:flex-row gap-6">
+                <!-- Left: Product Grid -->
+                <div class="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <!-- Search Bar -->
+                    <div class="p-4 border-b border-gray-100 flex gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="pos-search" placeholder="Search product by name or barcode..." class="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-slate-700">
+                        </div>
+                        <select id="pos-category-filter" class="bg-gray-50 border-none rounded-xl px-4 py-3 font-medium text-slate-600 outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="all">All Categories</option>
+                            <option value="Grocery">Grocery</option>
+                            <option value="Cloths">Cloths</option>
+                        </select>
+                    </div>
+                    <!-- Grid -->
+                    <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                        <div id="pos-product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- Items go here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Cart -->
+                <div class="w-full md:w-96 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                    <!-- Order Type Switch -->
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex bg-gray-100 p-1 rounded-xl">
+                            <button onclick="pos.setOrderType('retail')" id="btn-retail" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all bg-white text-primary shadow-sm">Retail</button>
+                            <button onclick="pos.setOrderType('wholesale')" id="btn-wholesale" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:text-slate-700">Wholesale</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Cart Items -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-3" id="pos-cart-items">
+                        <!-- Cart Items go here -->
+                        <div class="flex flex-col items-center justify-center h-full text-slate-400">
+                            <i class="fa-solid fa-basket-shopping text-4xl mb-3 opacity-30"></i>
+                            <p>Cart is empty</p>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="p-6 bg-slate-50 border-t border-gray-200">
+                        <div class="flex justify-between mb-2 text-sm text-slate-500">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal">Rs. 0.00</span>
+                        </div>
+                        <div class="flex justify-between mb-4 text-sm text-slate-500">
+                            <span>Discount</span>
+                            <span id="cart-discount">Rs. 0.00</span>
+                        </div>
+                        <div class="flex justify-between mb-6 text-xl font-bold text-slate-800">
+                            <span>Total</span>
+                            <span id="cart-total">Rs. 0.00</span>
+                        </div>
+                        <button onclick="pos.checkout()" class="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2">
+                            <span>PAY NOW</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: INVENTORY -->
+            <section id="view-inventory" class="view-section hidden fade-in space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">Product List</h3>
+                        <button onclick="inventory.openModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add Product
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex gap-4 mb-4">
+                        <input type="text" id="inv-search" onkeyup="inventory.renderTable()" placeholder="Search products..." class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-gray-50 text-xs uppercase font-semibold text-slate-500">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-l-lg">Name</th>
+                                    <th class="px-4 py-3">Category</th>
+                                    <th class="px-4 py-3">Cost</th>
+                                    <th class="px-4 py-3">Retail</th>
+                                    <th class="px-4 py-3">Wholesale</th>
+                                    <th class="px-4 py-3">Stock</th>
+                                    <th class="px-4 py-3 rounded-r-lg text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-gray-100">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: REPORTS -->
+            <section id="view-reports" class="view-section hidden fade-in space-y-6">
+                <!-- Filters -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-slate-700">Date Range:</span>
+                        <input type="date" id="report-start" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                        <span class="text-gray-400">to</span>
+                        <input type="date" id="report-end" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                        <button onclick="reports.loadData()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">
+                            <i class="fa-solid fa-filter mr-2"></i>Filter
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="reports.downloadCSV()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all">
+                            <i class="fa-solid fa-download mr-2"></i>Download CSV
+                        </button>
+                        <button onclick="reports.clearAll()" class="bg-red-50 text-red-600 border border-red-100 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
+                            <i class="fa-solid fa-trash mr-2"></i>Clear History
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between">
+                         <h3 class="text-lg font-bold text-slate-800">Sales Report</h3>
+                         <h3 class="text-lg font-bold text-emerald-600" id="report-total-revenue">Total: Rs. 0.00</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                         <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-gray-50 text-xs uppercase font-semibold text-slate-500">
+                                <tr>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4">Type</th>
+                                    <th class="px-6 py-4 text-right">Discount</th>
+                                    <th class="px-6 py-4 text-right">Total</th>
+                                    <th class="px-6 py-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: VENDORS -->
+            <section id="view-vendors" class="view-section hidden fade-in space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">Vendors</h3>
+                        <button onclick="vendors.addVendor()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-600">Add Vendor</button>
+                    </div>
+                    <!-- Simple list for now -->
+                     <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-gray-50 text-xs uppercase font-semibold text-slate-500">
+                            <tr>
+                                <th class="px-6 py-4">Name</th>
+                                <th class="px-6 py-4">Contact</th>
+                                <th class="px-6 py-4">Company</th>
+                                <th class="px-6 py-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendor-table-body" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: SETTINGS -->
+            <section id="view-settings" class="view-section hidden fade-in space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">Account Settings</h3>
+                    <form onsubmit="account.save(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Shop Name</label>
+                            <input type="text" id="setting-shop-name" placeholder="e.g. My Super City" class="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Address</label>
+                            <input type="text" id="setting-address" placeholder="e.g. 123, Main Street, Colombo" class="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-primary">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Mobile Number 1</label>
+                                <input type="text" id="setting-phone1" placeholder="07x-xxxxxxx" class="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Mobile Number 2</label>
+                                <input type="text" id="setting-phone2" placeholder="07x-xxxxxxx" class="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-primary">
+                            </div>
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" class="bg-primary text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                                Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- MODAL: Add Product -->
+    <div id="modal-product" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 transform transition-all scale-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-4" id="modal-product-title">Add/Edit Product</h3>
+            <form id="product-form" onsubmit="inventory.saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="prod-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Product Name</label>
+                        <input type="text" id="prod-name" required class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                         <label class="block text-xs font-semibold text-slate-500 mb-1">Category</label>
+                         <select id="prod-category" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                            <option value="Grocery">Grocery</option>
+                            <option value="Cloths">Cloths</option>
+                         </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                     <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">S. Price (Retail)</label>
+                        <input type="number" id="prod-retail" required step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">S. Price (Wholesale)</label>
+                        <input type="number" id="prod-wholesale" required step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Cost Price</label>
+                        <input type="number" id="prod-cost" required step="0.01" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Stock Qty</label>
+                        <input type="number" id="prod-stock" required class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                         <label class="block text-xs font-semibold text-slate-500 mb-1">Unit</label>
+                         <select id="prod-unit" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                            <option value="pcs">Pieces (pcs)</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="pkt">Packet (pkt)</option>
+                            <option value="m">Meter (m)</option>
+                         </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="inventory.closeModal()" class="px-4 py-2 rounded-lg text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-indigo-700">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Vendor -->
+    <div id="modal-vendor" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Add Vendor</h3>
+            <form id="vendor-form" onsubmit="vendors.saveVendor(event)" class="space-y-4">
+                <div>
+                     <label class="block text-xs font-semibold text-slate-500 mb-1">Vendor Name</label>
+                     <input type="text" id="vend-name" required class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                </div>
+                <div>
+                     <label class="block text-xs font-semibold text-slate-500 mb-1">Contact No</label>
+                     <input type="text" id="vend-contact" required class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                </div>
+                 <div>
+                     <label class="block text-xs font-semibold text-slate-500 mb-1">Company (Optional)</label>
+                     <input type="text" id="vend-company" class="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-primary">
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="vendors.closeModal()" class="px-4 py-2 rounded-lg text-slate-500 font-bold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-6 py-2 rounded-lg bg-emerald-500 text-white font-bold hover:bg-emerald-600">Save Vendor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
